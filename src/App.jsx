@@ -1,35 +1,24 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import "./App.css";
 
+const subject = "React";
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Hello, World!</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <header>
+        //Curly braces tell react I want to read the value inside the variable 
+        {/* Hello, React :)! */}
+        {/* $ allows for you to embed things like ) as text */}
+        <h1>Hello, {`${subject} :)`}!</h1>
+        {/* Hello, REACT */}
+        {/* Converts the "React" to uppercase */}
+        <h1>Hello, {subject.toUpperCase()}</h1>
+        {/* Hello, 4! */}
+        {/* Adds 2 + 2 and displays the result */}
+        <h1>Hello, {2 + 2}!</h1>
+          <button type="button" className="primary">Click this button</button>
+      </header>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
