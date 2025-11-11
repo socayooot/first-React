@@ -1,7 +1,9 @@
 function App(props) {
   return (
     <div className="todoapp stack-large">
-      <h1 Hidden>TodoMatic</h1>
+      <h1 hidden={false}>TodoMatic</h1>
+      <h1 hidden={true}>This should be hidden</h1>
+      <h1 hidden={false}>This should be visible</h1>
       <form>
         <h2 className="label-wrapper">
           <label htmlFor="new-todo-input" className="label__lg">
