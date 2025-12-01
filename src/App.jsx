@@ -1,129 +1,105 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 function App() {
-  const [tasks, setTasks] = useState([
-    { id: 0, name: "Eat", completed: true },
-    { id: 1, name: "Sleep", completed: false },
-    { id: 2, name: "Repeat", completed: false },
-  ]);
+  const [username, setUsername] = useState("");
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [socket, setSocket] = useState(null);
 
-  const [filter, setFilter] = useState("All"); // All | Active | Completed
-  const [input, setInput] = useState("");
+  const messagesEndRef = useRef(null);
 
-  // FILTER LOGIC ----------------------
-  const FILTER_MAP = {
-    All: () => true,
-    Active: (task) => !task.completed,
-    Completed: (task) => task.completed,
-  };
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
-  const FILTER_NAMES = Object.keys(FILTER_MAP);
+  // Connect to WebSocket
+  function connectToServer() {
+    if (!username.trim()) {
+      alert("Enter username first!");
+      return;
+    }
 
-  const filteredTasks = tasks.filter(FILTER_MAP[filter]);
+    const ws = new WebSocket("ws://localhost:8080"); // CHANGE HERE for part 1
+    setSocket(ws);
 
-  // ADD TASK --------------------------
-  function handleAdd(e) {
-    e.preventDefault();
-    if (input.trim() === "") return;
-
-    const newTask = {
-      id: Date.now(),
-      name: input,
-      completed: false,
+    ws.onopen = () => {
+      console.log("Connected to WebSocket server");
     };
 
-    setTasks([...tasks, newTask]);
-    setInput("");
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      setMessages((prev) => [...prev, data]);
+    };
+
+    ws.onclose = () => {
+      console.log("Disconnected from server");
+    };
   }
 
-  // TOGGLE COMPLETE -------------------
-  function toggleTask(id) {
-    const updated = tasks.map((task) =>
-      task.id === id ? { ...task, completed: !task.completed } : task
-    );
-    setTasks(updated);
-  }
+  // Send message
+  function sendMessage(e) {
+    e.preventDefault();
+    if (!message.trim()) return;
 
-  // DELETE TASK -----------------------
-  function deleteTask(id) {
-    const remaining = tasks.filter((task) => task.id !== id);
-    setTasks(remaining);
+    const data = {
+      username,
+      message,
+    };
+
+    socket.send(JSON.stringify(data));
+    setMessage("");
   }
 
   return (
-    <div className="todoapp stack-large">
-      <h1>TodoMatic</h1>
+    <div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
+      <h1>React WebSocket Chat</h1>
 
-      {/* ADD A TASK */}
-      <form onSubmit={handleAdd}>
-        <h2 className="label-wrapper">
-          <label htmlFor="new-todo-input" className="label__lg">
-            What needs to be done?
-          </label>
-        </h2>
-        <input
-          type="text"
-          id="new-todo-input"
-          className="input input__lg"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          autoComplete="off"
-        />
-        <button type="submit" className="btn btn__primary btn__lg">
-          Add
-        </button>
-      </form>
+      {/* Username Before Connecting */}
+      {!socket && (
+        <>
+          <input
+            type="text"
+            placeholder="Enter username…"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <button onClick={connectToServer}>Connect</button>
+        </>
+      )}
 
-      {/* FILTER BUTTONS */}
-      <div className="filters btn-group stack-exception">
-        {FILTER_NAMES.map((name) => (
-          <button
-            key={name}
-            type="button"
-            className="btn toggle-btn"
-            aria-pressed={filter === name}
-            onClick={() => setFilter(name)}
+      {/* Chat UI After Connecting */}
+      {socket && (
+        <>
+          <div
+            style={{
+              border: "1px solid #ccc",
+              padding: "10px",
+              height: "300px",
+              overflowY: "scroll",
+              marginTop: "20px",
+            }}
           >
-            <span className="visually-hidden">Show </span>
-            <span>{name}</span>
-            <span className="visually-hidden"> tasks</span>
-          </button>
-        ))}
-      </div>
+            {messages.map((m, idx) => (
+              <div key={idx}>
+                <strong>{m.username}:</strong> {m.message}
+              </div>
+            ))}
+            <div ref={messagesEndRef}></div>
+          </div>
 
-      {/* TASK COUNT */}
-      <h2 id="list-heading">
-        {filteredTasks.length} task{filteredTasks.length !== 1 && "s"} remaining
-      </h2>
-
-      {/* TODO LIST */}
-      <ul
-        role="list"
-        className="todo-list stack-large stack-exception"
-        aria-labelledby="list-heading"
-      >
-        {filteredTasks.map((task) => (
-          <li className="todo stack-small" key={task.id}>
-            <div className="c-cb">
-              <input
-                id={`todo-${task.id}`}
-                type="checkbox"
-                checked={task.completed}
-                onChange={() => toggleTask(task.id)}
-              />
-              <label className="todo-label" htmlFor={`todo-${task.id}`}>
-                {task.name}
-              </label>
-            </div>
-
-            <div className="btn-group">
-              <button type="button" className="btn btn__danger" onClick={() => deleteTask(task.id)}>
-                Delete <span className="visually-hidden">{task.name}</span>
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+          <form onSubmit={sendMessage} style={{ marginTop: "10px" }}>
+            <input
+              type="text"
+              placeholder="Type a message…"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+            <button type="submit">Send</button>
+          </form>
+        </>
+      )}
     </div>
   );
 }
