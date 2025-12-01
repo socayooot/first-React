@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 
+// Main App Component
 function App() {
+  // State Variables
   const [username, setUsername] = useState("");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [socket, setSocket] = useState(null);
-
+// Ref for scrolling to the latest message
   const messagesEndRef = useRef(null);
 
+  // Scroll to bottom when messages change
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -21,18 +24,21 @@ function App() {
       return;
     }
 
-    const ws = new WebSocket("ws://localhost:8080"); // CHANGE HERE for part 1
+    const ws = new WebSocket("ws://localhost:8080");
     setSocket(ws);
 
+    // WebSocket Event Handlers for this client
     ws.onopen = () => {
       console.log("Connected to WebSocket server");
     };
 
+    // Receive messages
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       setMessages((prev) => [...prev, data]);
     };
 
+    // Handle disconnection
     ws.onclose = () => {
       console.log("Disconnected from server");
     };
@@ -43,15 +49,18 @@ function App() {
     e.preventDefault();
     if (!message.trim()) return;
 
+    // Construct message data
     const data = {
       username,
       message,
     };
 
+    // Send message via WebSocket
     socket.send(JSON.stringify(data));
     setMessage("");
   }
 
+  // Render UI
   return (
     <div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
       <h1>React WebSocket Chat</h1>
