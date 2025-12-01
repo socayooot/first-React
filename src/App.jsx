@@ -1,8 +1,61 @@
-function App(props) {
+import { useState } from "react";
+
+function App() {
+  const [tasks, setTasks] = useState([
+    { id: 0, name: "Eat", completed: true },
+    { id: 1, name: "Sleep", completed: false },
+    { id: 2, name: "Repeat", completed: false },
+  ]);
+
+  const [filter, setFilter] = useState("All"); // All | Active | Completed
+  const [input, setInput] = useState("");
+
+  // FILTER LOGIC ----------------------
+  const FILTER_MAP = {
+    All: () => true,
+    Active: (task) => !task.completed,
+    Completed: (task) => task.completed,
+  };
+
+  const FILTER_NAMES = Object.keys(FILTER_MAP);
+
+  const filteredTasks = tasks.filter(FILTER_MAP[filter]);
+
+  // ADD TASK --------------------------
+  function handleAdd(e) {
+    e.preventDefault();
+    if (input.trim() === "") return;
+
+    const newTask = {
+      id: Date.now(),
+      name: input,
+      completed: false,
+    };
+
+    setTasks([...tasks, newTask]);
+    setInput("");
+  }
+
+  // TOGGLE COMPLETE -------------------
+  function toggleTask(id) {
+    const updated = tasks.map((task) =>
+      task.id === id ? { ...task, completed: !task.completed } : task
+    );
+    setTasks(updated);
+  }
+
+  // DELETE TASK -----------------------
+  function deleteTask(id) {
+    const remaining = tasks.filter((task) => task.id !== id);
+    setTasks(remaining);
+  }
+
   return (
     <div className="todoapp stack-large">
-      <h1 hidden={false}>TodoMatic</h1>
-      <form>
+      <h1>TodoMatic</h1>
+
+      {/* ADD A TASK */}
+      <form onSubmit={handleAdd}>
         <h2 className="label-wrapper">
           <label htmlFor="new-todo-input" className="label__lg">
             What needs to be done?
@@ -12,83 +65,64 @@ function App(props) {
           type="text"
           id="new-todo-input"
           className="input input__lg"
-          name="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
           autoComplete="off"
         />
         <button type="submit" className="btn btn__primary btn__lg">
           Add
         </button>
       </form>
+
+      {/* FILTER BUTTONS */}
       <div className="filters btn-group stack-exception">
-        <button type="button" className="btn toggle-btn" aria-pressed="true">
-          <span className="visually-hidden">Show </span>
-          <span>all</span>
-          <span className="visually-hidden"> tasks</span>
-        </button>
-        <button type="button" className="btn toggle-btn" aria-pressed="false">
-          <span className="visually-hidden">Show </span>
-          <span>Active</span>
-          <span className="visually-hidden"> tasks</span>
-        </button>
-        <button type="button" className="btn toggle-btn" aria-pressed="false">
-          <span className="visually-hidden">Show </span>
-          <span>Completed</span>
-          <span className="visually-hidden"> tasks</span>
-        </button>
+        {FILTER_NAMES.map((name) => (
+          <button
+            key={name}
+            type="button"
+            className="btn toggle-btn"
+            aria-pressed={filter === name}
+            onClick={() => setFilter(name)}
+          >
+            <span className="visually-hidden">Show </span>
+            <span>{name}</span>
+            <span className="visually-hidden"> tasks</span>
+          </button>
+        ))}
       </div>
-      <h2 id="list-heading">3 tasks remaining</h2>
+
+      {/* TASK COUNT */}
+      <h2 id="list-heading">
+        {filteredTasks.length} task{filteredTasks.length !== 1 && "s"} remaining
+      </h2>
+
+      {/* TODO LIST */}
       <ul
         role="list"
         className="todo-list stack-large stack-exception"
-        aria-labelledby="list-heading">
-        <li className="todo stack-small">
-          <div className="c-cb">
-            <input id="todo-0" type="checkbox" defaultChecked />
-            <label className="todo-label" htmlFor="todo-0">
-              Eat
-            </label>
-          </div>
-          <div className="btn-group">
-            <button type="button" className="btn">
-              Edit <span className="visually-hidden">Eat</span>
-            </button>
-            <button type="button" className="btn btn__danger">
-              Delete <span className="visually-hidden">Eat</span>
-            </button>
-          </div>
-        </li>
-        <li className="todo stack-small">
-          <div className="c-cb">
-            <input id="todo-1" type="checkbox" />
-            <label className="todo-label" htmlFor="todo-1">
-              Sleep
-            </label>
-          </div>
-          <div className="btn-group">
-            <button type="button" className="btn">
-              Edit <span className="visually-hidden">Sleep</span>
-            </button>
-            <button type="button" className="btn btn__danger">
-              Delete <span className="visually-hidden">Sleep</span>
-            </button>
-          </div>
-        </li>
-        <li className="todo stack-small">
-          <div className="c-cb">
-            <input id="todo-2" type="checkbox" />
-            <label className="todo-label" htmlFor="todo-2">
-              Repeat
-            </label>
-          </div>
-          <div className="btn-group">
-            <button type="button" className="btn">
-              Edit <span className="visually-hidden">Repeat</span>
-            </button>
-            <button type="button" className="btn btn__danger">
-              Delete <span className="visually-hidden">Repeat</span>
-            </button>
-          </div>
-        </li>
+        aria-labelledby="list-heading"
+      >
+        {filteredTasks.map((task) => (
+          <li className="todo stack-small" key={task.id}>
+            <div className="c-cb">
+              <input
+                id={`todo-${task.id}`}
+                type="checkbox"
+                checked={task.completed}
+                onChange={() => toggleTask(task.id)}
+              />
+              <label className="todo-label" htmlFor={`todo-${task.id}`}>
+                {task.name}
+              </label>
+            </div>
+
+            <div className="btn-group">
+              <button type="button" className="btn btn__danger" onClick={() => deleteTask(task.id)}>
+                Delete <span className="visually-hidden">{task.name}</span>
+              </button>
+            </div>
+          </li>
+        ))}
       </ul>
     </div>
   );
