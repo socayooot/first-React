@@ -27,3 +27,5 @@ I do not utilize any premade-statements and I do not sanitize anything, the user
 Overall, I learned how little knowledge I have in coding with JS, I wish I took a class to better understand JS and how to code like this. After 
 getting help from AI and tutorials, it makes a lot more sense, but it would be more beneificial for me and the future that I took a class to 
 understand what is going on and how to write the code.
+
+I should mention that my websocketserver is being ran on port 8080 while my localhost where the actual website is being run on is port 3000. To run must type npm run dev into the cmd line and node websocketserve.js.
