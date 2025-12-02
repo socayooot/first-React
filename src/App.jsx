@@ -19,27 +19,27 @@ function App() {
 
   // Connect to WebSocket
   function connectToServer() {
-    if (!username.trim()) {
-      alert("Enter username first!");
-      return;
-    }
+  if (!username.trim()) {
+    alert("Enter username first!");
+    return;
+  }
 
-    const ws = new WebSocket("ws://localhost:8080");
-    setSocket(ws);
+  const ws = new WebSocket("ws://localhost:8080");
+  setSocket(ws);
 
     // WebSocket Event Handlers for this client
-    ws.onopen = () => {
+    socket.onopen = function(e) {
       console.log("Connected to WebSocket server");
     };
 
     // Receive messages
-    ws.onmessage = (event) => {
+    socket.onmessage = function(event) {
       const data = JSON.parse(event.data);
       setMessages((prev) => [...prev, data]);
     };
 
     // Handle disconnection
-    ws.onclose = () => {
+    socket.onclose = () => {
       console.log("Disconnected from server");
     };
   }
