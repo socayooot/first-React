@@ -30,7 +30,6 @@ wss.on("connection", (ws) => {
   //when they actually go to do that it enters the ws.on block below
   //ws.on sets canSend to false, preventing further messages from being sent
   //after 3 seconds, canSend is set back to true, allowing them to send again
-});
 
 
   //when a message is received from this client, this event is fired
